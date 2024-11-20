@@ -14,11 +14,21 @@ const io = new Server(httpServer, {
   }
 })
 
-io.on('connection', (user) => {
-  console.log('a user connected', user.id)
+io.on('connection', (socket) => {
+  console.log('a user connected')
+
+  socket.on('join room', (room) => {
+    socket.join(room)
+    console.log(`User joined room: ${room}`)
+  })
+
+  socket.on('leave room', (room) => {
+    socket.leave(room)
+    console.log(`User left room: ${room}`)
+  })
 
   socket.on('chat message', (message) => {
-    io.emit('chat message', message)
+    io.to(message.room).emit('chat message', message)
   })
 
   socket.on('disconnect', () => {
@@ -26,7 +36,6 @@ io.on('connection', (user) => {
   })
 })
 
-// Use a different port for the Socket.io server to avoid conflicts with Vite
 const PORT = 3001
 httpServer.listen(PORT, () => {
   console.log(`Socket.io server running on port ${PORT}`)
