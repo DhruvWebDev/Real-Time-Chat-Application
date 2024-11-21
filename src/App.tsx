@@ -18,7 +18,7 @@ interface Message {
 
 const rooms = ['General', 'Technology', 'Random', 'Support']
 
-export default function ChatApp() {
+export default function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [messageInput, setMessageInput] = useState('')
   const [connected, setConnected] = useState(false)
