@@ -80,6 +80,7 @@ export default function ChatApp() {
         text: messageInput,
         userId,
         room: currentRoom,
+        created_at: new Date().toISOString(), // Add created_at field
       };
       socketRef.current.emit("chat message", message); // Send message via WebSocket
       setMessageInput("");
@@ -129,19 +130,19 @@ export default function ChatApp() {
           >
             <div className="space-y-4">
               {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.userId === userId ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`rounded-lg px-4 py-2 max-w-[80%] break-words ${
-                      message.userId === userId
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
+                 <div
+                 key={index}
+                 className={`flex ${
+                   message.userId === userId ? "justify-end" : "justify-start"
+                 }`}
+               >
+                 <div
+                   className={`rounded-lg px-4 py-2 max-w-[80%] break-words ${
+                     message.userId === userId
+                       ? "bg-primary text-primary-foreground"
+                       : "bg-muted"
+                   }`}
+                 >
                     <p>{message.text}</p>
                     <span className="text-xs opacity-70">
                       {message.created_at &&
