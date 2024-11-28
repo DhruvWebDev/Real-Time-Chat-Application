@@ -10,12 +10,12 @@ export interface Message {
 }
 
 // Function to fetch messages
-export const fetchMessages = async (token: string,_,room: string): Promise<Message[]> => {
+export const fetchMessages = async (token: string,_, room: string): Promise<Message[]> => {
   const supabase = supabaseClient(token); // Initialize Supabase client with the token
   const { data, error } = await supabase
     .from('messages')
     .select('*')
-    .eq('room',room)
+    .eq('room', room)
     .order('created_at', { ascending: true });
 
   if (error) {
