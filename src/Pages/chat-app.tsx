@@ -22,7 +22,7 @@ interface Message {
 }
 
 export default function ChatApp() {
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const [messages, setMessages] = useState<Message[]>([])
   const [messageInput, setMessageInput] = useState("")
   const [connected, setConnected] = useState(false)
@@ -34,44 +34,50 @@ export default function ChatApp() {
   const { fn: fnSend } = useFetch(sendMessageToAPI)
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:3001", {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionAttempts: 5
-    })
+    if (!isLoaded) return
 
-    socketRef.current.on("connect", () => {
-      console.log("Connected to socket server")
-      setConnected(true)
-      socketRef.current?.emit("join-room", roomId)
-    })
+    const initializeChat = async () => {
+      await fetchMessagesForRoom(roomId)
 
-    socketRef.current.on("disconnect", () => {
-      console.log("Disconnected from socket server")
-      setConnected(false)
-    })
+      socketRef.current = io("http://localhost:3001", {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: 5
+      })
 
-    socketRef.current.on("chat-message", (message: Message) => {
-      console.log("Received message:", message)
-      setMessages(prevMessages => [...prevMessages, message])
-      scrollToBottom()
-    })
-    fetchMessagesForRoom(roomId)
+      socketRef.current.on("connect", () => {
+        console.log("Connected to socket server")
+        setConnected(true)
+        socketRef.current?.emit("join-room", roomId)
+      })
+
+      socketRef.current.on("disconnect", () => {
+        console.log("Disconnected from socket server")
+        setConnected(false)
+      })
+
+      socketRef.current.on("chat-message", (message: Message) => {
+        console.log("Received message:", message)
+        setMessages(prevMessages => [...prevMessages, message])
+        scrollToBottom()
+      })
+    }
+
+    initializeChat()
 
     return () => {
       console.log("Cleaning up socket connection")
       socketRef.current?.emit("leave-room", roomId)
       socketRef.current?.disconnect()
     }
-  }, [roomId])
+  }, [isLoaded, roomId])
 
   useEffect(() => {
     if (fetchedMessages) {
       setMessages(fetchedMessages)
       scrollToBottom()
     }
-    fetchedMessages("");
-  }, [fetchedMessages.length > 0])
+  }, [fetchedMessages])
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -100,6 +106,12 @@ export default function ChatApp() {
 
       setMessageInput("")
     }
+  }
+
+  if (!isLoaded) {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <p className="text-white">Loading...</p>
+    </div>
   }
 
   return (
@@ -144,7 +156,11 @@ export default function ChatApp() {
                     className={`flex ${message.user_id === user?.id ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`rounded-lg px-4 py-2 max-w-[80%] break-words ${message.user_id === user?.id ? "bg-gradient-to-r from-emerald-500 to-blue-500 text-white" : "bg-gray-700 text-gray-100"}`}
+                      className={`rounded-lg px-4 py-2 max-w-[80%] break-words ${
+                        message.user_id === user?.id
+                          ? "bg-gradient-to-r from-emerald-500 to-blue-500 text-white"
+                          : "bg-gray-700 text-gray-100"
+                      }`}
                     >
                       <p>{message.text}</p>
                       <span className="text-xs opacity-70">
