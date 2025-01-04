@@ -107,3 +107,12 @@ export default function App() {
     </div>
   )
 }
+
+/*
+Why useRef is Ideal for Socket Management
+Persistence: The socketRef instance remains the same across renders, ensuring the connection isn't recreated unnecessarily.
+Performance: Avoids triggering re-renders when the socket state changes (e.g., receiving a new message).
+Ease of Cleanup: The socket can be easily disconnected in the cleanup function of useEffect.
+Direct Access: Provides direct access to the socket instance for emitting or handling events without relying on state.
+This design ensures a stable, efficient, and easy-to-manage WebSocket connection within the React component.
+*/
